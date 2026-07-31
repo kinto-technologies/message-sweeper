@@ -1,0 +1,36 @@
+*.nvda-addon
+__pycache__/
+*.pyc
+*.pyo
+*.mo
+addon/doc/*/readme.html
+Logs/
+*.log
+.worktrees/
+*.pdf
+*.mp4
+*.mp3
+slide/
+
+# 作業用ファイル（個人環境用）
+photo.bat
+screenshot.png
+
+# NVDAログ抽出スクリプト（個人環境用）
+save-nvda-log.bat
+save-nvda-log.ps1
+
+# カバレッジ成果物（CI が生成、コミットしない）
+.coverage
+coverage.xml
+coverage.json
+htmlcov/
+
+_internal/
+CLAUDE.md
+.mcp.json
+.claude/
+sweeper_sample.md
+testmessage.txt
+docs/
+summary*.md

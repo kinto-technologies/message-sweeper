@@ -1,0 +1,31 @@
+name: Question
+description: Ask a question about using Message Sweeper
+title: "[Question]: "
+labels: ["question"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        English or Japanese is fine / 日本語でも英語でも大丈夫です。
+        For security issues or Code of Conduct concerns, please use the private contacts instead of this form.
+  - type: textarea
+    id: question
+    attributes:
+      label: Your question
+      description: What would you like to know?
+    validations:
+      required: true
+  - type: textarea
+    id: tried
+    attributes:
+      label: What have you tried or checked?
+      description: e.g. the README, the NVDA Add-on settings panel, or existing issues.
+    validations:
+      required: false
+  - type: input
+    id: nvda-version
+    attributes:
+      label: NVDA version (if relevant)
+      placeholder: e.g. 2025.1
+    validations:
+      required: false

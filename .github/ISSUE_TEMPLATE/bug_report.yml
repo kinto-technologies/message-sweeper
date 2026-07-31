@@ -1,0 +1,66 @@
+name: Bug report
+description: Report something that isn't working as expected
+title: "[Bug]: "
+labels: ["bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug. English or Japanese is fine / 日本語でも英語でも大丈夫です。
+  - type: textarea
+    id: what-happened
+    attributes:
+      label: What happened?
+      description: What did NVDA announce or do, and what did you expect instead?
+      placeholder: NVDA read ... but I expected ...
+    validations:
+      required: true
+  - type: textarea
+    id: steps
+    attributes:
+      label: Steps to reproduce
+      placeholder: |
+        1. Focus a message in Slack / Teams ...
+        2. ...
+    validations:
+      required: false
+  - type: input
+    id: nvda-version
+    attributes:
+      label: NVDA version
+      placeholder: e.g. 2025.1
+    validations:
+      required: true
+  - type: input
+    id: addon-version
+    attributes:
+      label: Message Sweeper version
+      placeholder: e.g. 1.0.0
+    validations:
+      required: true
+  - type: dropdown
+    id: app
+    attributes:
+      label: Which app?
+      options:
+        - Slack
+        - Microsoft Teams
+        - Both
+        - Other / not sure
+    validations:
+      required: true
+  - type: input
+    id: app-version
+    attributes:
+      label: Slack / Teams version
+      placeholder: e.g. Slack 4.x
+    validations:
+      required: false
+  - type: textarea
+    id: logs
+    attributes:
+      label: Relevant NVDA log output (optional)
+      description: Please remove any secrets or personal information before pasting. GitHub is a public forum.
+      render: text
+    validations:
+      required: false

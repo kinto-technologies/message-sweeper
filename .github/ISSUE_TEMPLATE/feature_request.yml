@@ -1,0 +1,30 @@
+name: Feature request
+description: Suggest an idea or improvement
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        English or Japanese is fine / 日本語でも英語でも大丈夫です。
+  - type: textarea
+    id: problem
+    attributes:
+      label: What problem would this solve?
+      description: What is awkward, slow, or missing today?
+    validations:
+      required: true
+  - type: textarea
+    id: idea
+    attributes:
+      label: Proposed behaviour
+      description: How would you like Message Sweeper to behave?
+    validations:
+      required: true
+  - type: textarea
+    id: context
+    attributes:
+      label: Anything else?
+      description: Alternatives you considered, examples, related issues, etc.
+    validations:
+      required: false

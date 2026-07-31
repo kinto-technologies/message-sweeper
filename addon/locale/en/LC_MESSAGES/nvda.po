@@ -1,0 +1,74 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: en\n"
+
+msgid "Link: {title}"
+msgstr "Link: {title}"
+
+msgid "Link: Title unavailable"
+msgstr "Link: Title unavailable"
+
+msgid "Link: {url}"
+msgstr "Link: {url}"
+
+msgid "{author}'s X post: {text}"
+msgstr "{author}'s X post: {text}"
+
+msgid "X post: {text}"
+msgstr "X post: {text}"
+
+msgid "Message Sweeper enabled"
+msgstr "Message Sweeper enabled"
+
+msgid "Message Sweeper disabled"
+msgstr "Message Sweeper disabled"
+
+msgid "Toggle Message Sweeper module"
+msgstr "Toggle Message Sweeper module"
+
+msgid "Message Sweeperの有効／無効の切り替えを音で通知する"
+msgstr "Notify Message Sweeper enable/disable toggle with sound"
+
+msgid "{sender}. Fetching link titles..."
+msgstr "{sender}. Fetching link titles..."
+
+msgid "Time {time}"
+msgstr "Time {time}"
+
+msgid "{count} links"
+msgstr "{count} links"
+
+msgid "{count} attachments"
+msgstr "{count} attachments"
+
+msgid "Level {level}"
+msgstr "Level {level}"
+
+msgid "{user} mentioned you in #{channel}"
+msgstr "{user} mentioned you in #{channel}"
+
+msgid "Shared by {sender} at {time}: {body}"
+msgstr "Shared by {sender} at {time}: {body}"
+
+msgid "Shared by {sender}: {body}"
+msgstr "Shared by {sender}: {body}"
+
+msgid "Link: {host} (Title unavailable)"
+msgstr "Link: {host} (Title unavailable)"
+
+msgid "リンクのタイトル取得に失敗したときの読み上げ:"
+msgstr "Title fetch failure announcement:"
+
+msgid "「タイトル取得不可」とだけ読み上げる"
+msgstr "Announce \"Title unavailable\" only"
+
+msgid "ホスト名とともに読み上げる"
+msgstr "Announce with hostname"
+
+msgid "URL をそのまま読み上げる"
+msgstr "Announce the URL itself"
+
+msgid "絵文字を省略する連続数のしきい値:"
+msgstr "Consecutive-emoji count to skip:"

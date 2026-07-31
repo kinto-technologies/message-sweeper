@@ -1,0 +1,74 @@
+msgid ""
+msgstr ""
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+"Language: ja\n"
+
+msgid "Link: {title}"
+msgstr "リンク: {title}"
+
+msgid "Link: Title unavailable"
+msgstr "リンク: タイトル取得不可"
+
+msgid "Link: {url}"
+msgstr "リンク: {url}"
+
+msgid "{author}'s X post: {text}"
+msgstr "{author}のXポスト: {text}"
+
+msgid "X post: {text}"
+msgstr "Xポスト: {text}"
+
+msgid "Message Sweeper enabled"
+msgstr "Message Sweeper 有効"
+
+msgid "Message Sweeper disabled"
+msgstr "Message Sweeper 無効"
+
+msgid "Toggle Message Sweeper module"
+msgstr "Message Sweeperの有効・無効を切り替えます"
+
+msgid "Message Sweeperの有効／無効の切り替えを音で通知する"
+msgstr "Message Sweeperの有効／無効の切り替えを音で通知する"
+
+msgid "{sender}. Fetching link titles..."
+msgstr "{sender}。リンクのタイトルを取得中..."
+
+msgid "Time {time}"
+msgstr "時刻 {time}"
+
+msgid "{count} links"
+msgstr "{count} 件のリンク"
+
+msgid "{count} attachments"
+msgstr "{count} 件の添付ファイル"
+
+msgid "Level {level}"
+msgstr "レベル {level}"
+
+msgid "{user} mentioned you in #{channel}"
+msgstr "{user}さんが #{channel} であなたをメンションしました"
+
+msgid "Shared by {sender} at {time}: {body}"
+msgstr "{sender}さんが {time} に共有: {body}"
+
+msgid "Shared by {sender}: {body}"
+msgstr "{sender}さんが共有: {body}"
+
+msgid "Link: {host} (Title unavailable)"
+msgstr "リンク: {host} (タイトル取得不可)"
+
+msgid "リンクのタイトル取得に失敗したときの読み上げ:"
+msgstr "リンクのタイトル取得に失敗したときの読み上げ:"
+
+msgid "「タイトル取得不可」とだけ読み上げる"
+msgstr "「タイトル取得不可」とだけ読み上げる"
+
+msgid "ホスト名とともに読み上げる"
+msgstr "ホスト名とともに読み上げる"
+
+msgid "URL をそのまま読み上げる"
+msgstr "URL をそのまま読み上げる"
+
+msgid "絵文字を省略する連続数のしきい値:"
+msgstr "絵文字を省略する連続数のしきい値:"

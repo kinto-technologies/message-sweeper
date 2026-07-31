@@ -1,0 +1,38 @@
+name: Translation
+description: Contribute a new translation or fix an existing one
+title: "[i18n]: "
+labels: ["translation"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for helping make Message Sweeper available in more languages!
+        Please prepare your `nvda.po` (and `manifest.ini`) as described in [CONTRIBUTING.md](https://github.com/kinto-technologies/message-sweeper/blob/main/CONTRIBUTING.md), then attach or paste them below. A maintainer will review and commit them — please do **not** open a pull request.
+  - type: input
+    id: language
+    attributes:
+      label: Language
+      placeholder: e.g. French, 简体中文
+    validations:
+      required: true
+  - type: input
+    id: lang-tag
+    attributes:
+      label: IETF language tag
+      placeholder: e.g. fr, de, zh_CN, pt_BR
+    validations:
+      required: true
+  - type: textarea
+    id: files
+    attributes:
+      label: Translation files
+      description: Drag-and-drop your nvda.po (and manifest.ini), or paste their contents here.
+    validations:
+      required: true
+  - type: textarea
+    id: notes
+    attributes:
+      label: Notes (optional)
+      description: Strings you were unsure about, questions, or how you would like to be credited.
+    validations:
+      required: false

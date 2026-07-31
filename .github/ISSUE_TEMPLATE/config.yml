@@ -1,0 +1,8 @@
+blank_issues_enabled: false
+contact_links:
+  - name: 🔒 Security vulnerability (please report privately)
+    url: https://github.com/kinto-technologies/message-sweeper/blob/main/SECURITY.md
+    about: Do not file security issues publicly. See our Security Policy for how to report by email.
+  - name: ✉️ Code of Conduct concern (private)
+    url: mailto:message-sweeper@kinto-technologies.com
+    about: To privately report a Code of Conduct concern, email the maintainers. For general questions, please open a Question issue instead.

@@ -1,0 +1,12 @@
+# Coverage.py configuration.
+#
+# relative_files keeps paths in coverage.xml relative to the repo root, and
+# `include = addon/*` emits repo-root-relative filenames (e.g.
+# addon/appModules/slack.py) so SonarQube maps them onto the indexed sources
+# (sonar.sources=addon) without any source-prefix guessing.
+[run]
+relative_files = True
+include = addon/*
+
+[xml]
+output = coverage.xml
