@@ -1,6 +1,5 @@
 # -*- coding: utf-8 -*-
 """Build .nvda-addon package from addon/ directory."""
-import configparser
 import html
 import os
 import re
@@ -12,16 +11,29 @@ OUTPUT_DIR = os.path.dirname(__file__)
 
 
 def read_manifest():
-    # NVDA manifest.ini は ConfigObj 形式（セクションヘッダなし、値はクォート付き）。
-    # configparser 用にダミーセクションを付与し、クォートを除去してパースする。
+    """manifest.ini から name と version だけを取り出す。
+
+    NVDA manifest.ini は ConfigObj 形式で、description のような長い値は三重
+    クォートの複数行で書ける。configparser は継続行がインデントされていること
+    を要求するため、三重クォートの複数行を渡すと ParsingError で落ちる。NVDA
+    本体は configobj で読むので manifest 側は正しく、壊れるのはこのツールだけ
+    だった（ストア用の説明文を複数段落にした時点で実際にビルドが落ちた）。
+
+    ここで必要なのは name と version の2つだけなので、行頭一致で取り出す。
+    複数行の値がどれだけ増えても影響を受けない。
+    """
     path = os.path.join(ADDON_DIR, "manifest.ini")
     with open(path, encoding="utf-8") as f:
-        content = "[addon]\n" + f.read()
-    manifest = configparser.ConfigParser()
-    manifest.read_string(content)
-    name = manifest.get("addon", "name").strip('"')
-    version = manifest.get("addon", "version").strip('"')
-    return name, version
+        content = f.read()
+
+    def _value(key):
+        pattern = r'^%s\s*=\s*"([^"\n]*)"\s*$' % re.escape(key)
+        match = re.search(pattern, content, re.M)
+        if not match:
+            raise ValueError("manifest.ini に %s が見つかりません" % key)
+        return match.group(1)
+
+    return _value("name"), _value("version")
 
 
 def _compile_po_to_mo(po_path, mo_path):

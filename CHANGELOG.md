@@ -5,6 +5,24 @@ All notable changes to Message Sweeper are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.0.1] — 2026-08-20
+
+Add-on Store listing metadata only. No change in behaviour.
+
+### Changed
+
+- The manifest `summary` and `description` were rewritten for the Add-on Store
+  listing: what the add-on does, how it differs from lowering NVDA's symbol
+  level, the toggle gesture, and where the settings live. The wording now names
+  NVDA rather than "screen readers", because the add-on is specific to NVDA.
+- The Japanese translated manifest (`addon/locale/ja/manifest.ini`) was
+  rewritten to match, so the store listing and the add-on's own entry read the
+  same way in Japanese. It also names NVDA instead of "screen readers".
+- `build_addon.py` no longer reads the manifest with `configparser`, which
+  requires continuation lines to be indented and therefore fails on a
+  triple-quoted multi-line value. It now takes `name` and `version` by
+  line-anchored match, so a long `description` cannot break the build.
+
 ## [1.0.0] — 2026-08-12
 
 First public release.
