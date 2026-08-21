@@ -44,12 +44,16 @@ Two files per language:
    "Language: fr\n"
    ```
 
-3. Edit `manifest.ini` — translate `summary` and `description`:
+3. Edit `manifest.ini` — translate the `summary` line and every paragraph of `description`:
 
    ```ini
-   summary = "Message Sweeper - Slack & Teams messages for screen readers"
-   description = "Replaces URLs with page titles, removes emoji clutter ..."
+   summary = "Message Sweeper - Clean Slack & Teams messages for NVDA"
+   description = """First paragraph, translated.
+   Second paragraph, translated.
+   """
    ```
+
+   `description` is several paragraphs long, so it is wrapped in triple quotes with one paragraph per line. Keep that shape — a single-line value collapses the paragraphs into one. Write each key once: a duplicated `summary` or `description` fails the build rather than silently picking one.
 
 ### How to submit a translation
 
