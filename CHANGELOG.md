@@ -5,9 +5,10 @@ All notable changes to Message Sweeper are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [1.0.1] — 2026-08-20
+## [1.0.1] — 2026-08-21
 
-Add-on Store listing metadata only. No change in behaviour.
+Add-on Store listing metadata, with build and documentation fixes. No change
+in the add-on's behaviour.
 
 ### Changed
 
@@ -20,8 +21,19 @@ Add-on Store listing metadata only. No change in behaviour.
   same way in Japanese. It also names NVDA instead of "screen readers".
 - `build_addon.py` no longer reads the manifest with `configparser`, which
   requires continuation lines to be indented and therefore fails on a
-  triple-quoted multi-line value. It now takes `name` and `version` by
-  line-anchored match, so a long `description` cannot break the build.
+  triple-quoted multi-line value. It now reads the manifest line by line and
+  skips the body of a triple-quoted value, so a line such as `version = "9.9"`
+  written inside `description` as a configuration example is no longer taken
+  as the add-on's version. Before this change it was, and the package was
+  built under that version.
+- A manifest that declares the same key twice now fails the build. ConfigObj
+  takes the last value, but a manifest whose effective version a reader cannot
+  determine is not worth packaging.
+- The translation example in `CONTRIBUTING.md` still showed the 1.0.0 `summary`
+  and `description`. It now shows the current wording, and the triple-quoted
+  multi-paragraph form the value actually uses, so a translator starting from
+  the guide neither translates prose that no longer exists nor collapses the
+  paragraphs into one line.
 
 ## [1.0.0] — 2026-08-12
 
