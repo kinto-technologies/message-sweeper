@@ -10,28 +10,79 @@ ADDON_DIR = os.path.join(os.path.dirname(__file__), "addon")
 OUTPUT_DIR = os.path.dirname(__file__)
 
 
-def read_manifest():
-    """manifest.ini から name と version だけを取り出す。
+_MANIFEST_ITEM = re.compile(r'^([A-Za-z_][A-Za-z0-9_]*)\s*=\s*(.*)$')
+_TRIPLE_QUOTES = ('"""', "'''")
+
+
+def parse_manifest_items(content):
+    """manifest.ini の最上位の項目を key -> value の dict で返す。
 
     NVDA manifest.ini は ConfigObj 形式で、description のような長い値は三重
-    クォートの複数行で書ける。configparser は継続行がインデントされていること
-    を要求するため、三重クォートの複数行を渡すと ParsingError で落ちる。NVDA
-    本体は configobj で読むので manifest 側は正しく、壊れるのはこのツールだけ
-    だった（ストア用の説明文を複数段落にした時点で実際にビルドが落ちた）。
+    クォートの複数行で書ける（NVDA 公式テンプレートの manifest.ini.tpl も
+    `description = \"\"\"...\"\"\"` を出力する）。configparser は継続行がインデント
+    されていることを要求するため、この形を渡すと ParsingError で落ちる。壊れる
+    のは NVDA 本体ではなくこのビルドスクリプトだけなので、ここで読む。
 
-    ここで必要なのは name と version の2つだけなので、行頭一致で取り出す。
-    複数行の値がどれだけ増えても影響を受けない。
+    ファイル全体に正規表現をかける方式は採らない。複数行の値の中身にも一致して
+    しまうため、description に
+
+        version = "9.9"
+
+    のような行が（設定例として）入っていれば、その 9.9 でパッケージが作られる。
+    実測で再発を確認した誤りである。ここでは行を順に見て、三重クォートの値の
+    中身は閉じるまで読み飛ばす。
+
+    同じキーが2回現れた場合はエラーにする。ConfigObj は後勝ちだが、どちらが
+    効くのか読み手に分からない manifest を黙って受け入れる理由はない。
+
+    複数行の値は本文を保持せず None を入れる。この関数の用途は name と version
+    の取得であり、どちらも1行のスカラーだからである。
     """
+    items = {}
+    closing = None  # 閉じ待ちの三重クォート
+    for line in content.splitlines():
+        if closing is not None:
+            if closing in line:
+                closing = None
+            continue
+        stripped = line.strip()
+        if not stripped or stripped.startswith("#"):
+            continue
+        match = _MANIFEST_ITEM.match(line)
+        if not match:
+            continue
+        key, raw = match.group(1), match.group(2).strip()
+        value = raw
+        for quote in _TRIPLE_QUOTES:
+            if raw.startswith(quote):
+                rest = raw[len(quote):]
+                if not (rest.endswith(quote) and len(rest) >= len(quote)):
+                    closing = quote  # 値は次の行以降に続く
+                value = None
+                break
+        else:
+            if len(raw) >= 2 and raw[0] == raw[-1] and raw[0] in "\"'":
+                value = raw[1:-1]
+        if key in items:
+            raise ValueError(
+                "manifest.ini に %s が複数あります。どちらが使われるか"
+                "曖昧なので中断します。" % key
+            )
+        items[key] = value
+    return items
+
+
+def read_manifest():
+    """manifest.ini から name と version を取り出す。"""
     path = os.path.join(ADDON_DIR, "manifest.ini")
     with open(path, encoding="utf-8") as f:
-        content = f.read()
+        items = parse_manifest_items(f.read())
 
     def _value(key):
-        pattern = r'^%s\s*=\s*"([^"\n]*)"\s*$' % re.escape(key)
-        match = re.search(pattern, content, re.M)
-        if not match:
+        value = items.get(key)
+        if not value:
             raise ValueError("manifest.ini に %s が見つかりません" % key)
-        return match.group(1)
+        return value
 
     return _value("name"), _value("version")
 
