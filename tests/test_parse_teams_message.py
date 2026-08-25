@@ -7,7 +7,6 @@ import unittest
 
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "addon"))
 sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "addon", "appModules"))
-sys.path.insert(0, os.path.join(os.path.dirname(__file__), "..", "addon", "globalPlugins"))
 
 for mod_name in [
     "addonHandler", "appModuleHandler", "globalPluginHandler",
@@ -41,7 +40,7 @@ import builtins
 if "_" not in dir(builtins):
     builtins._ = lambda x: x
 
-from teamsMessageSweeper import parse_teams_message
+from msTeams import parse_teams_message
 
 
 class TestParseTeamsMessageJa(unittest.TestCase):

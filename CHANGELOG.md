@@ -5,6 +5,40 @@ All notable changes to Message Sweeper are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.0] — 2026-08-25
+
+### Changed
+
+- The toggle that turns processing on and off no longer claims a default key.
+  It used to be bound to NVDA+V, which NVDA itself uses in browse mode to
+  switch screen layout. A global plugin's gestures are resolved before a browse
+  mode document's, so installing this add-on took that command away from NVDA
+  everywhere, not only in Slack and Teams. That was a defect, not a choice.
+  To get the toggle back on a key, open NVDA's menu, choose Preferences and
+  then Input Gestures, find the toggle under the Message Sweeper category, and
+  assign whatever key you like. Nothing else changes if you do not: message
+  processing is on by default, as before.
+- Microsoft Teams is now served by an app module (`addon/appModules/msTeams.py`)
+  instead of a global plugin. NVDA 2024.3 resolves a WebView2 process to the
+  name of the application hosting it (nvaccess/nvda#16717, proposed in
+  nvaccess/nvda#16705), and the new Teams reports `ms-teams`, so the add-on no
+  longer has to load its Teams code into every WebView2 app and then decide,
+  from the foreground window's title, whether the window is Teams. Because
+  `ms-teams` contains a hyphen and cannot be a Python module name, the global
+  plugin states the binding with
+  `appModuleHandler.registerExecutableWithAppModule()` and removes it on
+  `terminate()`. What Teams messages sound like is unchanged.
+- The global plugin was renamed to `addon/globalPlugins/messageSweeper.py` and
+  now keeps only what belongs to neither app: the toggle, the settings panel,
+  and the Teams binding.
+- The enable flag moved to `addon/shared/state.py`. It used to be a class
+  attribute of the Teams global plugin, which the Slack app module imported to
+  read, so Slack depended on a Teams file for a setting that is neither app's.
+  Both app modules and the toggle now read the same module.
+- Teams support no longer targets the WebView2 runtime process itself. Any
+  other WebView2 application that this add-on happened to affect is now left
+  alone, which is the intended narrowing.
+
 ## [1.0.1] — 2026-08-21
 
 Add-on Store listing metadata, with build and documentation fixes. No change
