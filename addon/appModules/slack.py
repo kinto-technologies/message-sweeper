@@ -615,10 +615,10 @@ def parse_slack_message(name_text):
 
 
 def _is_sweeper_enabled():
-    """globalPlugin 側の共通フラグを参照"""
+    """アドオン共通の有効フラグを参照（globalPlugin の切り替えコマンドが切り替える）"""
     try:
-        from globalPlugins.teamsMessageSweeper import GlobalPlugin
-        return GlobalPlugin._processing_enabled
+        from shared.state import is_processing_enabled
+        return is_processing_enabled()
     except Exception:
         return True
 

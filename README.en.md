@@ -42,9 +42,9 @@ No special action is required. When you focus a message in Slack or Teams, the p
 
 ### Keyboard Shortcut
 
-- NVDA+V: Toggle the add-on on or off (sound feedback)
+- Toggle command: Turn the add-on on or off (sound feedback). No key is assigned by default
 
-If you want to temporarily disable the add-on and return to Slack or Teams' default reading, press NVDA+V. Press it again to re-enable.
+If you want to temporarily disable the add-on and return to Slack or Teams' default reading, use the toggle command. To give it a key, open NVDA's menu, choose Preferences and then Input Gestures, and assign any key you like to the toggle command under the Message Sweeper category. Press it again to re-enable.
 
 ### Reading Order
 
@@ -119,7 +119,7 @@ Open NVDA menu → Preferences → Settings and select the "Message Sweeper" cat
 ### Notify Enable/Disable Toggle with Sound
 
 - Default: On
-- Controls how state changes are announced when you press NVDA+V. When on, a tone plays. When off, the state is spoken.
+- Controls how state changes are announced when you use the toggle command. When on, a tone plays. When off, the state is spoken.
 
 
 ## Known Limitations
