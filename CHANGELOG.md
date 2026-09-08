@@ -5,6 +5,79 @@ All notable changes to Message Sweeper are documented here.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [1.1.1] — 2026-09-07
+
+### Changed
+
+- The manual now sends you to NVDA's Add-on Store first. Installing from the
+  store lets NVDA verify the integrity of the file it downloads, which a manual
+  download cannot do. Downloading the `.nvda-addon` file from the Releases page
+  is kept as the fallback, since in-house distribution and handing over a
+  development build still need it. The uninstall steps no longer name the
+  Add-on Manager: NVDA replaced it with the Add-on Store in 2023.2, so the name
+  does not exist in any NVDA version this add-on supports.
+
+### Fixed
+
+- Two kinds of emoji label are no longer half-read. Slack collapses a run of
+  three or more identical emoji into one label that carries the count, as in
+  `13 青い丸 絵文字`. That count is now the weight of the run, so the label is
+  removed once and summarized as 13 emoji, where before the count was read as
+  one emoji and the body kept the fragment `13 青い`. A label of three or more
+  Japanese characters (`紙吹雪`) or three or more English words
+  (`flag of Japan`) is now matched whole as well; only its tail used to match,
+  which left the first character or word in the body and named the summary
+  after the remainder.
+- Emoji labels are recognized again where Slack runs them straight onto the
+  message text. Slack has begun naming emoji in English (`large blue circle`,
+  `tada`) and leaves no space between the body and the label, as in
+  `今日はtada 絵文字sparkles 絵文字です`. The fix above had required a label to
+  start at the beginning of the text, after whitespace, or after another label,
+  so a label in that shape was not recognized at all and decoration that 1.1.0
+  removed was read out in full. Where a label may start is now decided by the
+  switch in character class instead: an English label may start after any
+  non-ASCII character, a katakana label after any non-katakana character.
+  Between a Japanese character and the closing `絵文字` nothing but the label
+  can appear, so a name of any length is taken there, which is what gets the
+  count on `13 large blue circle 絵文字` as well. Where the text in front of a
+  label is ASCII too, nothing marks where the name begins, so at most two
+  words are taken there, as before.
+- The emoji summary no longer reads the removed run back out. Teams leaves
+  emoji in the message text as the characters themselves, and a run of them was
+  summarized under one name made of the whole run and counted as a single
+  emoji, so a message decorated with thirteen identical emoji had them removed
+  from the body and then spoken again in full by the summary, followed by the
+  count 1. Every emoji in a run is now counted on its own: that message is
+  summarized as one emoji with the count 13, and a run of different emoji names
+  each of them once. A sequence joined by a zero-width joiner, or a character
+  followed by a variation selector, counts as the one emoji it displays as. The
+  name in the summary is the emoji character itself, which NVDA's own symbol
+  dictionary reads out, so no table of emoji names ships with the add-on.
+  Slack's collapsed labels (`13 青い丸 絵文字`) already carried their count and
+  are unchanged.
+- A Japanese Teams message sent today is no longer taken for English. Teams
+  writes the time of such a message as `今日の 16:25`, where an older message
+  carries the full date (`2026年9月7日 16:25.`). Only the full date counted as
+  a marker of a Japanese message, so a message sent today had its emoji summary
+  spoken in English after a Japanese body, and the `送信済み` label Teams
+  appends to your own messages stayed in the text. What the English interface
+  writes in that position has not been measured, so the English side is
+  unchanged.
+- Four strings in the settings panel are now translated into English. The
+  summary position setting and its three choices had no entry in the English
+  catalog, so NVDA fell back to the Japanese source string and an English
+  interface showed, and read out, Japanese. A new check
+  (`tests/test_locale_catalog.py`) compares every string the add-on marks for
+  translation against every locale catalog, and also fails on a translation
+  left empty, because an empty one falls back to the source string in the same
+  silent way.
+- Both catalogs no longer carry two entries that nothing asks for. The strings
+  that announced an X post (`X post: {text}` and `{author}'s X post: {text}`)
+  outlived the code that used them; X posts have been announced in the same
+  form as any other link since the oEmbed path was reinstated. The check above
+  now also fails on a catalog entry with no matching source string, so a
+  translator is not asked to render a phrase the add-on will never speak.
+
 ## [1.1.0] — 2026-08-25
 
 ### Changed

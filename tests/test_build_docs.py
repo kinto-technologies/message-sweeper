@@ -177,6 +177,41 @@ class TestRealReadmesConvert(unittest.TestCase):
         self.assertIn("releases/latest", en)
 
 
+class TestInstallationPrefersTheAddonStore(unittest.TestCase):
+    """導入案内がアドオンストアを第一の手順にしていることを固定する。
+
+    ストアからインストールすると NVDA が sha256 でファイルの整合性を検証する。
+    手動ダウンロードだけを案内していた状態には戻さない。手動手順そのものは
+    社内配布や開発版の受け渡しで必要なので、代替手段として残す。
+    """
+
+    def _readme(self, name):
+        repo_root = os.path.join(os.path.dirname(__file__), '..')
+        with open(os.path.join(repo_root, name), encoding='utf-8') as f:
+            return f.read()
+
+    def test_japanese_readme_leads_with_the_addon_store(self):
+        ja = self._readme('README.md')
+        self.assertIn("アドオンストア", ja)
+        self.assertLess(ja.index("アドオンストア"), ja.index("releases/latest"))
+
+    def test_english_readme_leads_with_the_addon_store(self):
+        en = self._readme('README.en.md')
+        self.assertIn("Add-on Store", en)
+        self.assertLess(en.index("Add-on Store"), en.index("releases/latest"))
+
+    def test_manual_download_is_kept_as_a_fallback(self):
+        for name in ('README.md', 'README.en.md'):
+            with self.subTest(readme=name):
+                self.assertIn("releases/latest", self._readme(name))
+
+    def test_retired_addon_manager_name_is_gone(self):
+        # NVDA 2023.2 でアドオンマネージャーはアドオンストアに置き換わった。
+        # 対応環境は 2025.1 以降なので、存在しない名前を案内してはいけない。
+        self.assertNotIn("アドオンマネージャー", self._readme('README.md'))
+        self.assertNotIn("Add-on Manager", self._readme('README.en.md'))
+
+
 class TestGenerateDocs(unittest.TestCase):
 
     def setUp(self):

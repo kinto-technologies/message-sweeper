@@ -13,12 +13,6 @@ msgstr "Link: Title unavailable"
 msgid "Link: {url}"
 msgstr "Link: {url}"
 
-msgid "{author}'s X post: {text}"
-msgstr "{author}'s X post: {text}"
-
-msgid "X post: {text}"
-msgstr "X post: {text}"
-
 msgid "Message Sweeper enabled"
 msgstr "Message Sweeper enabled"
 
@@ -72,3 +66,18 @@ msgstr "Announce the URL itself"
 
 msgid "絵文字を省略する連続数のしきい値:"
 msgstr "Consecutive-emoji count to skip:"
+
+msgid "サマリーの読み上げ位置:"
+msgstr "Summary announcement position:"
+
+msgid "読み上げない"
+msgstr "Do not announce"
+
+msgid "メッセージの前"
+msgstr "Before the message"
+
+msgid "メッセージの後"
+msgstr "After the message"
+
+msgid "Message Sweeper"
+msgstr "Message Sweeper"

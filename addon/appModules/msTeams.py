@@ -58,6 +58,10 @@ TEAMS_DATETIME_EN = re.compile(
     r')\s*$',
     re.IGNORECASE
 )
+# Teams は当日のメッセージだけ時刻を相対表記で書く（今日の 16:25）。年月日の形と
+# 違って末尾の句点も付かない。言語判定の手がかりとしてだけ使い、時刻の切り出し
+# （result["time"]）には使わない。
+TEAMS_RELATIVE_TIME_JA = re.compile(r'今日の\s*\d{1,2}:\d{2}')
 TEAMS_LINK_PREFIX_JA = re.compile(r'\s*リンク\s+(?=https?://)')
 TEAMS_LINK_PREFIX_EN = re.compile(r'\s*link\s+(?=https?://)', re.IGNORECASE)
 # Teams が URL なし添付リンクに付ける "Link" / "リンク" アクセシビリティラベルの除去
@@ -71,8 +75,14 @@ SENTENCE_SEP = ". "
 
 
 def _detect_teams_lang(text):
-    """Teams メッセージの言語を日時パターンで判定"""
-    if TEAMS_DATETIME_JA.search(text):
+    """Teams メッセージの言語を日時パターンで判定
+
+    年月日の形（2026年9月7日 16:25.）に加えて、当日のメッセージに付く相対表記
+    （今日の 16:25）も日本語の手がかりにする。これがないと日本語のメッセージが
+    en と判定され、絵文字サマリーが英語で読まれ、「送信済み」ラベルも本文に残る。
+    英語 UI が同じ位置に何を書くかは未実測なので、英語側の判定は変えない。
+    """
+    if TEAMS_DATETIME_JA.search(text) or TEAMS_RELATIVE_TIME_JA.search(text):
         return "ja"
     return "en"
 

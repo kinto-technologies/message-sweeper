@@ -79,6 +79,16 @@ class TestDetectLang(unittest.TestCase):
         text = "サンプル太郎 : テスト 時刻 12:00"
         self.assertEqual(_detect_lang(text), "ja")
 
+    def test_japanese_teams_relative_time(self):
+        """Teams の相対時刻「今日の HH:MM」でも日本語と判定される"""
+        text = "山田太郎 テスト1 お知らせです よろしくお願いします 今日の 16:25"
+        self.assertEqual(_detect_lang(text), "ja")
+
+    def test_english_relative_time_still_en(self):
+        """英語 UI の相対時刻は未実測なので判定を変えない（en のまま）"""
+        text = "UserName1 Announcement here Today at 4:25 PM"
+        self.assertEqual(_detect_lang(text), "en")
+
 
 class TestParseSlackMessageJa(unittest.TestCase):
     def test_full_message_with_metadata(self):

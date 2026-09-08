@@ -165,16 +165,15 @@ class TestNoUrlPath(_GainFocusHarness):
 
     def test_emoji_run_is_summarized_after_the_body(self):
         # 装飾として並んだ絵文字は本文から外れ、まとめとして本文と時刻の間に
-        # 入る。まとめのラベルが絵文字そのものになるのは現在の挙動で、この
-        # リファクタで変えるものではない。
+        # 入る。まとめは絵文字1文字を名前にして個数を数えるので、除去したランを
+        # 並べ直して読み上げることはない。
         obj = self._grouping(
             "UserName1 プロジェクト完了おめでとう \U0001F389\U0001F389\U0001F389"
             "\U0001F389 最高でした 2026年3月18日 10:29.")
         r = self._run(obj)
         self.assertEqual(
             ["UserName1 プロジェクト完了おめでとう 最高でした. "
-             "メッセージの絵文字: \U0001F389\U0001F389\U0001F389\U0001F389"
-             "1こ. 2026年3月18日 10:29"],
+             "メッセージの絵文字: \U0001F3894こ. 2026年3月18日 10:29"],
             r.spoken)
 
     def test_nothing_left_to_say_falls_through(self):
