@@ -99,6 +99,11 @@ def _detect_lang(text):
     # 通知一覧形式: 「さんが...であなたをメンションしました」または「（HH:MM）」
     if re.search(r'さんが\s+#\S+\s+であなたをメンションしました', text):
         return "ja"
+    # Teams は当日のメッセージの時刻を「今日の 16:25」と書き、「時刻」という語も
+    # 年月日も使わないので、上のどの手がかりにも当たらない。Slack のフッターの
+    # 時刻表記（今日の08:45）は同じ形で空白がないので、空白の有無は問わない。
+    if re.search(r'今日の\s*\d{1,2}:\d{2}', text):
+        return "ja"
     if re.search(r'（\d{1,2}:\d{2}）', text):
         return "ja"
     return "en"
@@ -139,3 +144,25 @@ def _unicode_glyph_count(s):
     bases = sum(1 for ch in s if ch not in _UNI_NON_GLYPH)
     zwj = s.count(_ZWJ)
     return max(1, bases - zwj)
+
+
+def _iter_unicode_glyphs(s):
+    """Split a contiguous Unicode-emoji cluster into one entry per visible glyph.
+
+    Returns (offset, glyph) pairs, where offset is the glyph's index within `s`.
+    Modifiers and joiners stay with the glyph they belong to: a variation
+    selector, keycap combiner or skin-tone modifier attaches to the character in
+    front of it, and a ZWJ also draws the following base into the same glyph, so
+    a joined sequence is one entry. This is the unit `_unicode_glyph_count`
+    counts, so the two stay in step.
+    """
+    spans = []
+    join_next = False
+    for i, ch in enumerate(s):
+        attaches = join_next or ch in _UNI_NON_GLYPH
+        join_next = ch == _ZWJ
+        if spans and attaches:
+            spans[-1][1] = i + 1
+        else:
+            spans.append([i, i + 1])
+    return [(start, s[start:end]) for start, end in spans]

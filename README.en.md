@@ -22,6 +22,17 @@ When you focus a message, the following processing happens automatically:
 
 ## Installation
 
+Install from NVDA's Add-on Store. Installing that way lets NVDA verify the integrity of the file it downloads.
+
+1. Open NVDA menu → Tools → Add-on Store
+2. Find "Message Sweeper" in the "Available add-ons" list
+3. Press the "Install" button
+4. Restart NVDA and the add-on is enabled
+
+### If you cannot use the Add-on Store
+
+You can also install the `.nvda-addon` file directly. This is the route for in-house distribution and for handing over a development build. NVDA does not verify the file's integrity on this route.
+
 1. Download the latest `.nvda-addon` file from the [Releases page](https://github.com/kinto-technologies/message-sweeper/releases/latest)
 2. Double-click the downloaded file (or press Enter on it)
 3. Choose "Yes" in NVDA's installation confirmation dialog
@@ -30,8 +41,8 @@ When you focus a message, the following processing happens automatically:
 
 ## Uninstallation
 
-1. Open NVDA menu → Tools → Add-on Manager
-2. Select "Message Sweeper" from the list
+1. Open NVDA menu → Tools → Add-on Store
+2. Select "Message Sweeper" in the "Installed add-ons" list
 3. Press the "Remove" button
 4. Restart NVDA
 

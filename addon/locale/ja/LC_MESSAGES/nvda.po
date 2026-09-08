@@ -13,12 +13,6 @@ msgstr "リンク: タイトル取得不可"
 msgid "Link: {url}"
 msgstr "リンク: {url}"
 
-msgid "{author}'s X post: {text}"
-msgstr "{author}のXポスト: {text}"
-
-msgid "X post: {text}"
-msgstr "Xポスト: {text}"
-
 msgid "Message Sweeper enabled"
 msgstr "Message Sweeper 有効"
 
@@ -72,3 +66,18 @@ msgstr "URL をそのまま読み上げる"
 
 msgid "絵文字を省略する連続数のしきい値:"
 msgstr "絵文字を省略する連続数のしきい値:"
+
+msgid "サマリーの読み上げ位置:"
+msgstr "サマリーの読み上げ位置:"
+
+msgid "読み上げない"
+msgstr "読み上げない"
+
+msgid "メッセージの前"
+msgstr "メッセージの前"
+
+msgid "メッセージの後"
+msgstr "メッセージの後"
+
+msgid "Message Sweeper"
+msgstr "Message Sweeper"

@@ -41,6 +41,9 @@ if "_" not in dir(builtins):
     builtins._ = lambda x: x
 
 from msTeams import parse_teams_message
+from shared.cleaner import clean_message_body, format_emoji_summary
+
+BLUE = "🔵"  # large blue circle
 
 
 class TestParseTeamsMessageJa(unittest.TestCase):
@@ -147,6 +150,35 @@ class TestParseTeamsMessageEn(unittest.TestCase):
         result = parse_teams_message(text)
         self.assertEqual(result["urls"], ["https://example.com/page"])
         self.assertEqual(result["time"], "4/27/2026 6:05 PM")
+
+
+class TestTeamsRelativeTimeJa(unittest.TestCase):
+    """Teams は当日のメッセージの時刻を「今日の 16:25」と書き、
+    「時刻」という語も年月日も使わない。この形でも日本語と判定し、
+    絵文字サマリーを日本語で読み上げること。
+    """
+
+    def test_relative_time_detected_as_ja(self):
+        text = "山田太郎 テスト1 お知らせです よろしくお願いします 今日の 16:25"
+        self.assertEqual(parse_teams_message(text)["lang"], "ja")
+
+    def test_relative_time_sent_label_removed(self):
+        """日本語と判定されるので「送信済み」ラベルの除去も働く"""
+        text = "山田太郎 送信済み テストメッセージです 今日の 16:25"
+        result = parse_teams_message(text)
+        self.assertEqual(result["lang"], "ja")
+        self.assertNotIn("送信済み", result["body"])
+        self.assertIn("テストメッセージです", result["body"])
+
+    def test_emoji_summary_spoken_in_japanese(self):
+        text = ("山田太郎 テスト1 お知らせです " + BLUE * 13
+                + " よろしくお願いします 今日の 16:25")
+        parsed = parse_teams_message(text)
+        cleaned = clean_message_body(parsed["body"], parsed["lang"], threshold=3)
+        self.assertEqual(
+            format_emoji_summary(cleaned.skipped_emoji, parsed["lang"]),
+            "メッセージの絵文字: " + BLUE + "13こ",
+        )
 
 
 if __name__ == "__main__":

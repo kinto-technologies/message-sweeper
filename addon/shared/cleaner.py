@@ -1,11 +1,12 @@
 # -*- coding: utf-8 -*-
 """Message body cleaning: emoji removal, decoration stripping."""
 import re
+from collections import namedtuple
 from dataclasses import dataclass, field
 from shared.patterns import (
     CHANNEL_MENTION_PATTERN,
     SLACK_BOLD_PATTERN, SLACK_ITALIC_PATTERN, SLACK_STRIKETHROUGH_PATTERN,
-    _unicode_glyph_count,
+    _iter_unicode_glyphs,
 )
 
 LINK_BRACKET_RESIDUAL_PATTERN = re.compile(r'\[\s*\((?:リンク|link)\)\s*\]')
@@ -16,19 +17,107 @@ ASCII_DECORATION_PATTERN = re.compile(r'[=\-~_]{5,}')
 
 EMOJI_TOTAL_THRESHOLD = 3
 
-# Single-word-before-絵文字/emoji variants used in _is_emoji_only and removal.
-# The full expanded_emoji pattern uses {1,3} greedy repetition, which can consume
-# legitimate words like "important message" as emoji name prefixes, causing
-# _is_emoji_only to return a false positive and the removal sub() to swallow
-# non-emoji text. These single-word patterns prevent that.
-_EXPANDED_EMOJI_SINGLE = {
-    "ja": re.compile(
-        r'(?:[a-zA-Z0-9_\-+]{1,20}(?:\s+[a-zA-Z0-9_\-+]{1,20})?|[゠-ヿ]{1,5}|[一-鿿]{1,2})\s+絵文字'
+# Expanded emoji labels: the "<label> 絵文字" / "<label> emoji" form used in
+# _is_emoji_only and removal.
+#
+# Matching one has to thread between two failures. Too narrow, and a label it
+# cannot cover in full leaves its head in the body ("紙" out of "紙吹雪") while
+# the summary gets named after the tail. Too wide, and it reaches back over
+# ordinary words before the label ("important message x0 絵文字"), which makes
+# _is_emoji_only report a false positive and the removal swallow body text.
+#
+# What settles where a label starts is the switch in character class, not
+# whitespace: Slack runs a label straight onto the body text ("今日はtada
+# 絵文字") and onto the previous label's terminator ("絵文字sparkles"), so
+# whitespace is not there to be relied on. Each kind of label therefore gets
+# the left boundary its own character class can defend, and they are kept in
+# separate patterns rather than one alternation — a label shape may only widen
+# on the boundary that makes it safe.
+_ASCII_EMOJI_WORD = r'[a-zA-Z0-9_\-+]{1,20}'
+# Any number of ASCII words, for the boundary below where the run cannot reach
+# body text: between a non-ASCII character and the terminator, only the label
+# can appear. Emoji names run to five words ("smiling face with smiling eyes")
+# and their length is not knowable in advance.
+_ASCII_EMOJI_RUN = _ASCII_EMOJI_WORD + r'(?:\s+' + _ASCII_EMOJI_WORD + r')*'
+# Up to two words, plus "of" as an internal connector so "flag of Japan" fits.
+# This is the form for a label whose left side is ASCII too, where nothing says
+# how far back the name reaches; widening it there would eat body words.
+_ASCII_EMOJI_LABEL = (
+    _ASCII_EMOJI_WORD + r'(?:\s+of)?(?:\s+' + _ASCII_EMOJI_WORD + r')?'
+)
+# Katakana labels ("クラッカー"), bounded to katakana so kanji and hiragana body
+# text cannot be drawn in.
+_KATAKANA_EMOJI_LABEL = r'[゠-ヿ]{1,8}'
+# Labels that mix kanji and hiragana ("青い丸", "紙吹雪") cannot be told apart
+# from Japanese body text by character class, so this one keeps a length bound
+# and the whitespace boundary. A label run onto the body text is missed here
+# (it gets read out as-is), which is better than eating the sentence in front
+# of it.
+_JA_EMOJI_LABEL = r'[ぁ-ゟ一-鿿]{1,8}'
+
+# After any non-ASCII character, together with whatever whitespace follows it.
+# This is what catches a label run onto Japanese body text; it also covers the
+# terminator (絵文字 is non-ASCII) and the space-separated form.
+_NON_ASCII_BOUNDARY = r'(?<=[^\x00-\x7f])\s*'
+# After any non-katakana character, including the start of the text.
+_NON_KATAKANA_BOUNDARY = r'(?<![゠-ヿ])'
+
+
+def _whitespace_boundary(terminator):
+    """Start of text, after whitespace, or right after a preceding terminator.
+
+    The boundary for label shapes that no character class can delimit, where
+    only whitespace says a name has started.
+    """
+    return r'(?:(?<![^\s])|(?<=' + terminator + r'))'
+
+
+def _expanded_emoji_pattern(boundary, label, terminator):
+    """Compile one expanded-label matcher.
+
+    `boundary` decides where a label is allowed to start, `label` what it may
+    contain, `terminator` the word that follows the name. The `atom` group is
+    the label region itself: the boundary may consume the whitespace in front
+    of the label, and that whitespace is not part of the emoji.
+
+    A leading count is optional and part of the region: Slack collapses a run
+    of three or more identical emoji into one label carrying the count
+    ("13 large blue circle 絵文字"), so the count has to go with the label
+    rather than stay in the body. A body number in that position ("在庫 12
+    confetti ball 絵文字") is indistinguishable from it, and is read as a count.
+    """
+    return re.compile(
+        boundary
+        + r'(?P<atom>'
+        r'(?:(?P<count>\d{1,4})\s+)?'
+        r'(?P<label>' + label + r')'
+        r'\s+' + terminator +
+        r')'
+    )
+
+
+_EXPANDED_EMOJI_PATTERNS = {
+    "ja": (
+        _expanded_emoji_pattern(_NON_ASCII_BOUNDARY, _ASCII_EMOJI_RUN, '絵文字'),
+        _expanded_emoji_pattern(_whitespace_boundary('絵文字'),
+                                _ASCII_EMOJI_LABEL, '絵文字'),
+        _expanded_emoji_pattern(_NON_KATAKANA_BOUNDARY,
+                                _KATAKANA_EMOJI_LABEL, '絵文字'),
+        _expanded_emoji_pattern(_whitespace_boundary('絵文字'),
+                                _JA_EMOJI_LABEL, '絵文字'),
     ),
-    "en": re.compile(
-        r'[a-zA-Z0-9_\-+]{1,20}(?:\s+[a-zA-Z0-9_\-+]{1,20})?\s+emoji'
+    # English UI (the terminator is "emoji"): how Slack joins a label to body
+    # text there has not been measured, so this path is left as it was.
+    "en": (
+        _expanded_emoji_pattern(_whitespace_boundary('emoji'),
+                                _ASCII_EMOJI_LABEL, 'emoji'),
     ),
 }
+
+
+# One emoji occurrence: where it sits, how much it weighs against the
+# threshold, the summary keys it contributes, and how many emoji it stands for.
+_EmojiAtom = namedtuple("_EmojiAtom", "start end weight names count")
 
 
 @dataclass
@@ -71,10 +160,12 @@ def _is_emoji_only(text, lang="ja"):
     意味のあるテキストが残らなければ絵文字のみと判定。
     """
     stripped = text
-    # 展開形式の絵文字を除去（例: 「スマイル 絵文字」「sakura 絵文字」）
-    # 単語1個限定パターンを使用: {1,3}greedy版は "important message x0 絵文字" のように
-    # 前置きの通常テキストも消費し、誤って emoji-only と判定してしまうため。
-    stripped = _EXPANDED_EMOJI_SINGLE[lang].sub('', stripped)
+    # 展開形式の絵文字を除去（例: 「tada 絵文字」「クラッカー 絵文字」）
+    # ラベルの種類ごとに左境界の違うパターンを順に適用する。境界のない
+    # greedy 版は "important message x0 絵文字" のように前置きの通常テキストも
+    # 消費し、誤って emoji-only と判定してしまうため。
+    for pattern in _EXPANDED_EMOJI_PATTERNS[lang]:
+        stripped = pattern.sub('', stripped)
     # コロン形式の絵文字を除去
     stripped = COLON_EMOJI_PATTERN.sub('', stripped)
     # Unicode絵文字を除去
@@ -84,37 +175,61 @@ def _is_emoji_only(text, lang="ja"):
     return len(stripped) == 0
 
 
+def _expanded_emoji_atom(match):
+    """Build the atom for one expanded-label match.
+
+    A collapsed label carries its own count ("13 large blue circle 絵文字").
+    That count is the atom's weight, so a collapsed run reaches the threshold
+    exactly as 13 separate emoji would, and it is also how many emoji the
+    summary reports. The span is the `atom` group, not the whole match, so the
+    whitespace a boundary consumed in front of the label stays in the body.
+    """
+    count = int(match.group("count")) if match.group("count") else 1
+    start, end = match.span("atom")
+    return _EmojiAtom(start, end, count, [match.group("label")], count)
+
+
 def _iter_emoji_atoms(text, lang):
-    """Yield (start, end, weight, names) for each emoji occurrence.
+    """Return one _EmojiAtom per emoji occurrence, left to right.
 
     An atom is one colon emoji, one expanded "name 絵文字" token, or one
-    contiguous Unicode-emoji cluster. weight is the glyph count (1 for colon
-    and expanded; glyph count for Unicode). names is a list of summary keys.
+    contiguous Unicode-emoji cluster. weight is what the threshold is measured
+    against (1 for colon; the collapsed count for expanded; glyph count for
+    Unicode) and count is how many emoji the summary attributes to each name.
 
     Reuses UNICODE_EMOJI_PATTERN (defined above, with correctly escaped
     codepoint ranges) as the contiguous-cluster matcher, so the run/glyph
     logic stays consistent with the rest of this module.
     """
     spans = []
-    # expanded "name 絵文字" (language specific, single-word-limited)
-    for m in _EXPANDED_EMOJI_SINGLE[lang].finditer(text):
-        name = m.group(0).replace(" 絵文字", "").replace(" emoji", "").strip()
-        spans.append((m.start(), m.end(), 1, [name]))
+    # expanded "name 絵文字" (one pattern per label shape and its boundary;
+    # where two of them cover the same label the overlap resolution below
+    # keeps the one that starts earliest, which is the widest reading)
+    for pattern in _EXPANDED_EMOJI_PATTERNS[lang]:
+        for m in pattern.finditer(text):
+            spans.append(_expanded_emoji_atom(m))
     # colon emoji
     for m in COLON_EMOJI_PATTERN.finditer(text):
-        spans.append((m.start(), m.end(), 1, [m.group(0).strip(':')]))
-    # unicode emoji clusters
+        spans.append(_EmojiAtom(m.start(), m.end(), 1,
+                                [m.group(0).strip(':')], 1))
+    # unicode emoji clusters, one atom per visible glyph. The name is the emoji
+    # character itself, which NVDA's own symbol dictionary reads out, so no table
+    # of emoji names has to ship with the add-on. Naming the whole cluster
+    # instead made the summary read the removed run back out and report it as one
+    # emoji ("13 blue circles, 1"), which cancels out the removal.
     for m in UNICODE_EMOJI_PATTERN.finditer(text):
-        spans.append((m.start(), m.end(), _unicode_glyph_count(m.group(0)),
-                      [m.group(0)]))
+        base = m.start()
+        for offset, glyph in _iter_unicode_glyphs(m.group(0)):
+            start = base + offset
+            spans.append(_EmojiAtom(start, start + len(glyph), 1, [glyph], 1))
     # resolve overlaps: sort by start, drop any atom starting before prev end
-    spans.sort(key=lambda s: (s[0], -(s[1])))
+    spans.sort(key=lambda s: (s.start, -s.end))
     result = []
     last_end = -1
     for s in spans:
-        if s[0] >= last_end:
+        if s.start >= last_end:
             result.append(s)
-            last_end = s[1]
+            last_end = s.end
     return result
 
 
@@ -124,12 +239,12 @@ def _flush_emoji_run(emoji_run, threshold, remove_spans, skipped_emoji):
     Extracted from _remove_emoji_runs as a module-level helper to keep that
     function's cognitive complexity within bounds.
     """
-    weight = sum(a[2] for a in emoji_run)
+    weight = sum(a.weight for a in emoji_run)
     if weight >= threshold:
-        remove_spans.append((emoji_run[0][0], emoji_run[-1][1]))
+        remove_spans.append((emoji_run[0].start, emoji_run[-1].end))
         for a in emoji_run:
-            for name in a[3]:
-                skipped_emoji[name] = skipped_emoji.get(name, 0) + 1
+            for name in a.names:
+                skipped_emoji[name] = skipped_emoji.get(name, 0) + a.count
 
 
 def _remove_emoji_runs(text, lang, threshold, skipped_emoji):
@@ -144,7 +259,7 @@ def _remove_emoji_runs(text, lang, threshold, skipped_emoji):
     remove_spans = []  # (start, end)
     run = [atoms[0]]
     for prev, cur in zip(atoms, atoms[1:]):
-        gap = text[prev[1]:cur[0]]
+        gap = text[prev.end:cur.start]
         if gap.strip() == "":
             run.append(cur)
         else:

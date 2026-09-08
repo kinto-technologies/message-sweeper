@@ -22,6 +22,17 @@ Slack Desktop および Microsoft Teams のメッセージを、スクリーン�
 
 ## インストール
 
+NVDA のアドオンストアから入れてください。ストア経由なら、NVDA がダウンロードしたファイルの整合性を検証します。
+
+1. NVDA メニュー → ツール → アドオンストア を開く
+2. 「利用可能なアドオン」の一覧から「Message Sweeper」を探す
+3. 「インストール」ボタンを押す
+4. NVDA を再起動すると、アドオンが有効になります
+
+### アドオンストアを使えない場合
+
+`.nvda-addon` ファイルを直接インストールすることもできます。社内配布や開発版の受け渡しではこちらを使います。この経路では NVDA による整合性の検証は行われません。
+
 1. [Releases ページ](https://github.com/kinto-technologies/message-sweeper/releases/latest) から最新の `.nvda-addon` ファイルをダウンロード
 2. ダウンロードしたファイルをダブルクリック（またはEnterキー）
 3. NVDAのインストール確認ダイアログで「はい」を選択
@@ -30,8 +41,8 @@ Slack Desktop および Microsoft Teams のメッセージを、スクリーン�
 
 ## アンインストール
 
-1. NVDA メニュー → ツール → アドオンマネージャー を開く
-2. 一覧から「Message Sweeper」を選択
+1. NVDA メニュー → ツール → アドオンストア を開く
+2. 「インストール済みのアドオン」の一覧から「Message Sweeper」を選択
 3. 「削除」ボタンを押す
 4. NVDAを再起動
 
